@@ -1,0 +1,14 @@
+# Dados gerados localmente — não versionar
+data/
+
+# DuckDB
+*.db
+*.db.wal
+
+# Python
+__pycache__/
+*.pyc
+.env
+
+# VS Code
+.vscode/
