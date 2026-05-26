@@ -86,3 +86,11 @@ SELECT
 FROM transacoes t
 LEFT JOIN lancamentos_contabeis l ON t.id_transacao = l.id_transacao
 ORDER BY tipo_divergencia, t.id_transacao;
+
+-- D1: Transações aprovadas sem lançamento contábil correspondente
+SELECT t.id_transacao, t.valor, t.data_transacao, t.estabelecimento
+FROM transacoes t
+LEFT JOIN lancamentos_contabeis l ON t.id_transacao = l.id_transacao
+WHERE l.id_transacao IS NULL
+  AND t.status_transacao = 'aprovada';
+  
