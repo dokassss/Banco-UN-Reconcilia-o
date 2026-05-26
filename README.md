@@ -69,7 +69,7 @@ duckdb banco_un.db
 
 ## Project Series
 
-This is **Project 1 of 3** built for a Finance Data Specialist candidacy:
+This is **Project 1 of 3**:
 
 | Project | Focus | Stack |
 |---|---|---|
