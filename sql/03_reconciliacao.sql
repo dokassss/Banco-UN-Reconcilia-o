@@ -93,4 +93,12 @@ FROM transacoes t
 LEFT JOIN lancamentos_contabeis l ON t.id_transacao = l.id_transacao
 WHERE l.id_transacao IS NULL
   AND t.status_transacao = 'aprovada';
-  
+
+
+  -- D3: Lançamentos com valor divergente da transação
+SELECT t.id_transacao, t.valor AS valor_transacao, l.valor AS valor_lancamento,
+       l.valor - t.valor AS diferenca
+FROM transacoes t
+INNER JOIN lancamentos_contabeis l ON t.id_transacao = l.id_transacao
+WHERE t.valor <> l.valor
+  AND t.status_transacao = 'aprovada';
