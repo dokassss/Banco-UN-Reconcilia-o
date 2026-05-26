@@ -102,3 +102,12 @@ FROM transacoes t
 INNER JOIN lancamentos_contabeis l ON t.id_transacao = l.id_transacao
 WHERE t.valor <> l.valor
   AND t.status_transacao = 'aprovada';
+
+
+  -- D4: Data de competência no mês errado
+SELECT t.id_transacao, t.data_transacao, l.data_competencia,
+       MONTH(t.data_transacao) AS mes_transacao,
+       MONTH(l.data_competencia) AS mes_competencia
+FROM transacoes t
+INNER JOIN lancamentos_contabeis l ON t.id_transacao = l.id_transacao
+WHERE MONTH(t.data_transacao) <> MONTH(l.data_competencia);
