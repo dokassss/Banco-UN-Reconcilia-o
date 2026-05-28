@@ -111,3 +111,90 @@ SELECT t.id_transacao, t.data_transacao, l.data_competencia,
 FROM transacoes t
 INNER JOIN lancamentos_contabeis l ON t.id_transacao = l.id_transacao
 WHERE MONTH(t.data_transacao) <> MONTH(l.data_competencia);
+
+-- ============================================================
+-- D2: Lançamentos de ajuste_manual sem transação de origem
+-- ============================================================
+SELECT
+    id_lancamento,
+    tipo_lancamento,
+    valor,
+    data_lancamento,
+    status_lancamento
+FROM lancamentos_contabeis
+WHERE tipo_lancamento = 'ajuste_manual'
+  AND id_transacao IS NULL
+ORDER BY data_lancamento;
+
+
+-- ============================================================
+-- D5: Pagamentos devolvidos com lançamento marcado como conciliado
+-- ============================================================
+SELECT
+    p.id_pagamento,
+    p.id_fatura,
+    p.valor_pago     AS valor_pagamento,
+    p.data_pagamento,
+    p.status_pagamento,
+    l.id_lancamento,
+    l.status_lancamento
+FROM pagamentos p
+INNER JOIN lancamentos_contabeis l
+    ON l.id_transacao = p.id_pagamento
+WHERE p.status_pagamento = 'devolvido'
+  AND l.status_lancamento = 'conciliado'
+ORDER BY p.data_pagamento;
+
+
+-- ============================================================
+-- D6: Transações com lançamento duplicado
+-- ============================================================
+SELECT
+    id_transacao,
+    COUNT(*) AS qtd_lancamentos
+FROM lancamentos_contabeis
+WHERE id_transacao IS NOT NULL
+GROUP BY id_transacao
+HAVING COUNT(*) > 1
+ORDER BY qtd_lancamentos DESC;
+
+
+-- ============================================================
+-- D7: Transações parceladas (3x) com lançamentos incompletos
+-- ============================================================
+SELECT
+    t.id_transacao,
+    t.parcelas,
+    COUNT(l.id_lancamento) AS qtd_lancamentos
+FROM transacoes t
+LEFT JOIN lancamentos_contabeis l
+    ON l.id_transacao = t.id_transacao
+WHERE t.parcelas = 3
+GROUP BY t.id_transacao, t.parcelas
+HAVING COUNT(l.id_lancamento) < 3
+ORDER BY qtd_lancamentos;
+
+
+-- ============================================================
+-- AGING: Dias em aberto por transação sem lançamento
+-- ============================================================
+SELECT
+    t.id_transacao,
+    t.valor,
+    t.data_transacao,
+    t.status_transacao,
+    DATEDIFF('day', t.data_transacao, CURRENT_DATE) AS dias_em_aberto,
+    CASE
+        WHEN DATEDIFF('day', t.data_transacao, CURRENT_DATE) <= 7  THEN '0-7 dias'
+        WHEN DATEDIFF('day', t.data_transacao, CURRENT_DATE) <= 30 THEN '8-30 dias'
+        WHEN DATEDIFF('day', t.data_transacao, CURRENT_DATE) <= 90 THEN '31-90 dias'
+        ELSE 'mais de 90 dias'
+    END AS faixa_aging
+FROM transacoes t
+LEFT JOIN lancamentos_contabeis l
+    ON l.id_transacao = t.id_transacao
+WHERE t.status_transacao = 'aprovada'
+  AND l.id_transacao IS NULL
+ORDER BY dias_em_aberto DESC;
+
+
